@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 import pandas as pd
 
 
@@ -49,15 +50,51 @@ def health_check():
 # -------------------------------------------------
 # Main endpoint
 # -------------------------------------------------
-@app.get("/campaign-analysis")
+@app.get("/campaign-analysis", response_class=HTMLResponse)
 def campaign_analysis():
+
     data = load_data()
+
     data = prepare_data(data)
 
-    return {
-        "Gender": get_response_rate(data, 'Gender').to_dict(orient='records'),
-        "Age": get_response_rate(data, 'AgeGroup').to_dict(orient='records'),
-        "Purchase in last Quarter": get_response_rate(data, 'Purchase_Last_Quarter').to_dict(orient='records'),
-        "Products Purchased": get_response_rate(data, 'Products_Purchased_Group').to_dict(orient='records')
-    }
+    gender = get_response_rate(data, 'Gender').to_dict(orient='records'),
+    age = get_response_rate(data, 'AgeGroup').to_dict(orient='records'),
+    last_quarter = get_response_rate(data, 'Purchase_Last_Quarter').to_dict(orient='records'),
+    products_purchased = get_response_rate(data, 'Products_Purchased_Group').to_dict(orient='records')
+
+    def table_html(title, df, group_col):
+        rows = "".join(
+            f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td></tr>"
+            for r in df.itertuples(index=False)
+        )
+        return (
+            f"<h3>{title}</h3>"
+            f"<table border='1' style='border-collapse:collapse;width:100%;margin-bottom:30px'>"
+            f"<tr style='background:#f4f4f4'><th>{group_col}</th><th>Count</th><th>Response Rate (%)</th></tr>"
+            f"{rows}</table>"
+        )
+
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Campaign Response Analysis Summary</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            h2 {{ text-align: center; }}
+            th, td {{ border: 1px solid #ccc; padding: 8px; text-align: center; }}
+        </style>
+    </head>
+    <body>
+        <h2>Campaign Response Analysis Summary</h2>
+        {table_html('Gender vs Campaign Response', gender, 'Gender')}
+        {table_html('Age Group vs Campaign Response', age, 'AgeGroup')}
+        {table_html('Purchase in Last Quarter vs Campaign Response', last_quarter, 'Purchase Last Quarter')}
+        {table_html('Product Usage vs Campaign Response', products_purchased, 'Products Purchased')}
+    </body>
+    </html>
+    """
+
+    return html_content
 
