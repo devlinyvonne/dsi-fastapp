@@ -57,9 +57,9 @@ def campaign_analysis():
 
     data = prepare_data(data)
 
-    gender = get_response_rate(data, 'Gender').to_dict(orient='records'),
-    age = get_response_rate(data, 'AgeGroup').to_dict(orient='records'),
-    last_quarter = get_response_rate(data, 'Purchase_Last_Quarter').to_dict(orient='records'),
+    gender = get_response_rate(data, 'Gender').to_dict(orient='records')
+    age = get_response_rate(data, 'AgeGroup').to_dict(orient='records')
+    last_quarter = get_response_rate(data, 'Purchase_Last_Quarter').to_dict(orient='records')
     products_purchased = get_response_rate(data, 'Products_Purchased_Group').to_dict(orient='records')
 
     def table_html(title, df, group_col):
